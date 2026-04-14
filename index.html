@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
 
     <style>
         :root {
@@ -260,6 +261,53 @@
                 transform: rotate(360deg);
             }
         }
+
+        #model-container {
+            width: 100%;
+            height: 300px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: none;
+            position: relative;
+        }
+
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            --progress-bar-color: var(--primary);
+        }
+
+        .modal-body {
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close-modal-icon {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .close-modal-icon:hover {
+            color: white;
+            background: var(--accent);
+            transform: rotate(90deg);
+        }
     </style>
 </head>
 
@@ -272,10 +320,16 @@
 
     <div id="modal">
         <div class="modal-body">
+            <div class="close-modal-icon" onclick="closeModal()">
+                <i class="fas fa-times"></i>
+            </div>
             <h2 id="modal-title">Info</h2>
+            <div id="model-container">
+                <model-viewer id="obj-viewer" src="" auto-rotate camera-controls shadow-intensity="1" touch-action="pan-y" 
+                    interaction-prompt="auto" interaction-prompt-style="wiggle" interaction-prompt-threshold="0" loading="eager">
+                </model-viewer>
+            </div>
             <p id="modal-text"></p>
-            <button class="close-btn"
-                onclick="document.getElementById('modal').classList.remove('active')">Tutup</button>
         </div>
     </div>
 
@@ -307,6 +361,7 @@
     <script>
         const container = document.querySelector('#viewer-container');
         const loader = document.getElementById('loader');
+        let viewer; // Global viewer instance
 
         async function createStyledIcon(iconString, color = '#6366f1', rotation = 0) {
             await document.fonts.ready;
@@ -336,7 +391,7 @@
             const arrowLeftUrl = await createStyledIcon('\u2B9D', '#6366f1', -90); // Rotasi ke kiri
             const arrowRightUrl = await createStyledIcon('\u2B9D', '#6366f1', 90); // Rotasi ke kanan
 
-            const viewer = new PANOLENS.Viewer({
+            viewer = new PANOLENS.Viewer({
                 container: container,
                 autoRotate: true,
                 autoRotateSpeed: 0.5,
@@ -353,7 +408,7 @@
             // --- Scene 1 Content ---
             const katalog1 = new PANOLENS.Infospot(UNIFORM_SIZE, infoUrl);
             katalog1.position.set(5000, 126, -1676);
-            katalog1.addEventListener('click', () => openModal("Katalog 1", "Katalog 1."));
+            katalog1.addEventListener('click', () => openModal("Katalog 1", "Katalog 1.", "Bench B.glb"));
 
             const katalog2 = new PANOLENS.Infospot(UNIFORM_SIZE, infoUrl);
             katalog2.position.set(5000, -79, 3296);
@@ -449,12 +504,7 @@
                 }, 500);
             }
 
-            // --- UI CONTROLS ---
-            function openModal(title, text) {
-                document.getElementById('modal-title').innerText = title;
-                document.getElementById('modal-text').innerText = text;
-                document.getElementById('modal').classList.add('active');
-            }
+
 
             document.getElementById('toggle-rotate').addEventListener('click', function () {
                 const isAutoRotate = !viewer.getControl().autoRotate;
@@ -507,6 +557,46 @@
                 }
             });
         }
+        // --- UI CONTROLS ---
+        function openModal(title, text, modelSrc = null) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+
+            const modelContainer = document.getElementById('model-container');
+            const modelViewer = document.getElementById('obj-viewer');
+
+            // Pause background rotation (Forcefully disable both flags)
+            if (viewer) {
+                viewer.autoRotate = false; 
+                if (viewer.getControl()) viewer.getControl().autoRotate = false;
+            }
+
+            if (modelSrc) {
+                modelContainer.style.display = 'block';
+                setTimeout(() => {
+                    if (modelViewer.src !== modelSrc) {
+                        modelViewer.src = modelSrc;
+                    }
+                }, 50);
+            } else {
+                modelContainer.style.display = 'none';
+            }
+
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.remove('active');
+
+            // Resume background rotation based on the state of the toggle button
+            const isAutoRotateOn = document.getElementById('toggle-rotate').classList.contains('btn-active');
+            if (viewer) {
+                viewer.autoRotate = isAutoRotateOn;
+                if (viewer.getControl()) viewer.getControl().autoRotate = isAutoRotateOn;
+            }
+        }
+
         initTour();
     </script>
 </body>
