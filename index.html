@@ -399,6 +399,33 @@
                 cameraFov: 100
             });
 
+            // Invert scroll zoom direction
+            const controls = viewer.getControl();
+            const originalDollyIn = controls.dollyIn;
+            controls.dollyIn = controls.dollyOut;
+            controls.dollyOut = originalDollyIn;
+
+            function addBounce(infospot) {
+                const startY = infospot.position.y;
+                new TWEEN.Tween(infospot.position)
+                    .to({ y: startY + 200 }, 1000)
+                    .easing(TWEEN.Easing.Quadratic.InOut)
+                    .repeat(Infinity)
+                    .yoyo(true)
+                    .start();
+            }
+
+            function addPulse(infospot) {
+                infospot.material.transparent = true;
+                infospot.material.opacity = 1;
+                new TWEEN.Tween(infospot.material)
+                    .to({ opacity: 0.3 }, 1000)
+                    .easing(TWEEN.Easing.Quadratic.InOut)
+                    .repeat(Infinity)
+                    .yoyo(true)
+                    .start();
+            }
+
             const scene1 = new PANOLENS.ImagePanorama('pintu_masuk.JPG');
             const scene2 = new PANOLENS.ImagePanorama('sudut_ruangan.JPG');
             const scene3 = new PANOLENS.ImagePanorama('lantai_dasar.JPG');
@@ -423,6 +450,8 @@
             arrow_sudut_ruangan.addEventListener('click', () => walkToTarget(scene2, arrow_sudut_ruangan.position, "SUDUT RUANGAN", "SUDUT RUANGAN"));
 
             scene1.add(katalog1, katalog2, area_tunggu, arrow_sudut_ruangan);
+            addBounce(katalog1); addBounce(katalog2); addBounce(area_tunggu);
+            addPulse(arrow_sudut_ruangan);
 
             // --- Scene 2 Content ---
             const arrow_pintu_masuk = new PANOLENS.Infospot(UNIFORM_SIZE, arrowRightUrl);
@@ -443,6 +472,8 @@
             arrow_lantai_bawah.addEventListener('click', () => walkToTarget(scene3, arrow_lantai_bawah.position, "LANTAI BAWAH", "LANTAI BAWAH"));
 
             scene2.add(katalog3, katalog4, arrow_pintu_masuk, arrow_lantai_bawah);
+            addBounce(katalog3); addBounce(katalog4);
+            addPulse(arrow_pintu_masuk); addPulse(arrow_lantai_bawah);
 
             // --- Scene 3 Content ---
             const arrow_sudut_ruangan2 = new PANOLENS.Infospot(UNIFORM_SIZE, arrowUrl);
@@ -450,6 +481,7 @@
             arrow_sudut_ruangan2.addEventListener('click', () => walkToTarget(scene2, arrow_sudut_ruangan2.position, "SUDUT RUANGAN", "SUDUT RUANGAN"));
 
             scene3.add(arrow_sudut_ruangan2);
+            addPulse(arrow_sudut_ruangan2);
 
             viewer.add(scene1);
 
