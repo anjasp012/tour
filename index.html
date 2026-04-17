@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+    <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
 
     <style>
         :root {
@@ -183,14 +184,105 @@
         .modal-body {
             background: var(--bg-glass);
             border: 1px solid var(--border);
-            padding: 45px;
+            padding: 30px 25px;
             border-radius: 35px;
-            max-width: 400px;
+            max-width: 1000px;
             width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
             color: white;
             transform: scale(0.8);
             transition: 0.4s;
-            text-align: center;
+            text-align: left;
+            position: relative;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .modal-body::-webkit-scrollbar {
+            display: none;
+        }
+
+        .modal-header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+        }
+
+        .modal-header-container h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .modal-text-content {
+            margin-top: 20px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: justify;
+        }
+
+        .modal-text-content p {
+            margin-top: 0;
+            margin-bottom: 1em;
+        }
+
+        .tabs-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid transparent;
+            color: rgba(255, 255, 255, 0.6);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+        }
+
+        .tab-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         #modal.active .modal-body {
@@ -262,16 +354,58 @@
             }
         }
 
+        .modal-content-wrapper {
+            display: flex;
+        }
+
+        .modal-content-wrapper.layout-vertical {
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .modal-content-wrapper.layout-horizontal {
+            flex-direction: row;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .modal-pane-3d {
+            flex: 1;
+            width: 100%;
+            display: none;
+        }
+
+        .modal-pane-text {
+            flex: 1;
+            width: 100%;
+        }
+
         #model-container {
             width: 100%;
-            height: 300px;
-            margin-bottom: 20px;
             background: rgba(255, 255, 255, 0.03);
             border-radius: 20px;
             border: 1px solid var(--border);
             overflow: hidden;
-            display: none;
             position: relative;
+        }
+
+        .layout-vertical #model-container {
+            height: 450px;
+        }
+
+        .layout-horizontal #model-container {
+            height: 400px;
+        }
+
+        @media (max-width: 768px) {
+            .modal-content-wrapper.layout-horizontal {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .layout-horizontal #model-container {
+                height: 350px;
+            }
         }
 
         model-viewer {
@@ -280,27 +414,45 @@
             --progress-bar-color: var(--primary);
         }
 
-        .modal-body {
-            max-width: 500px;
-            position: relative;
+        .layout-toggle-3d {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .layout-toggle-3d:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
         }
 
         .close-modal-icon {
-            position: absolute;
-            top: 20px;
-            right: 25px;
             font-size: 1.2rem;
             color: rgba(255, 255, 255, 0.4);
             cursor: pointer;
             transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 10;
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
         }
 
         .close-modal-icon:hover {
@@ -320,16 +472,39 @@
 
     <div id="modal">
         <div class="modal-body">
-            <div class="close-modal-icon" onclick="closeModal()">
-                <i class="fas fa-times"></i>
+            <div class="modal-header-container">
+                <h2 id="modal-title">Info</h2>
+                <div class="close-modal-icon" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </div>
             </div>
-            <h2 id="modal-title">Info</h2>
-            <div id="model-container">
-                <model-viewer id="obj-viewer" src="" auto-rotate camera-controls shadow-intensity="1" touch-action="pan-y" 
-                    interaction-prompt="auto" interaction-prompt-style="wiggle" interaction-prompt-threshold="0" loading="eager">
-                </model-viewer>
+            <div class="modal-content-wrapper layout-vertical" id="modal-layout-wrapper">
+                <div class="modal-pane-3d" id="modal-pane-3d">
+                    <div id="model-container">
+                        <model-viewer id="obj-viewer" src="" auto-rotate camera-controls shadow-intensity="1"
+                            touch-action="pan-y" interaction-prompt="auto" interaction-prompt-style="wiggle"
+                            interaction-prompt-threshold="0" loading="eager">
+                        </model-viewer>
+                        <button class="layout-toggle-3d" onclick="toggleLayout()" title="Ubah Layout Mode"><i class="fas fa-columns"></i></button>
+                    </div>
+                </div>
+                <div class="modal-pane-text">
+                    <div class="tabs-container">
+                        <div class="tab-buttons">
+                            <button id="btn-tab-id" class="tab-btn active" onclick="switchTab('id')">Indonesia</button>
+                            <button id="btn-tab-en" class="tab-btn" onclick="switchTab('en')">English</button>
+                            <div style="flex-grow: 1;"></div>
+                            <button class="tab-btn" id="btn-play" onclick="playNarration()"><i
+                                    class="fas fa-volume-up"></i> Teks ke Suara</button>
+                            <button class="tab-btn" id="btn-stop" onclick="stopNarration()"
+                                style="display: none; background: rgba(244, 63, 94, 0.2); color: #f43f5e; border-color: rgba(244, 63, 94, 0.5);"><i
+                                    class="fas fa-stop"></i> Berhenti</button>
+                        </div>
+                        <div class="modal-text-content tab-content active" id="tab-id"></div>
+                        <div class="modal-text-content tab-content" id="tab-en"></div>
+                    </div>
+                </div>
             </div>
-            <p id="modal-text"></p>
         </div>
     </div>
 
@@ -432,18 +607,22 @@
 
             const UNIFORM_SIZE = 500; // Ukuran seragam untuk semua tombol
 
+            const narasiCeramikID = `<p>Anda pastinya sudah tidak asing lagi dengan benda yang satu ini. Keramik, atau dalam Bahasa Yunaninya “keramikos” – memiliki peran yang amat penting dalam setiap lini kehidupan manusia. Sudah sejak masa prasejarah hingga kini, keramik kerap digunakan dalam segala urusan, mulai dari wadah di dapur, hiasan di ruang tamu, sampai pelengkap upacara pada bangunan keagamaan. Sangking berharganya benda ini dalam kehidupan sehari-hari, masyarakat Yunani sampai-sampai memiliki dewa pelindung pembuat keramik yang bernama “Keramos”.</p><p>Keberadaan keramik di Nusantara tentunya tidak dapat terlepas dari perdagangan internasional. Keramik-keramik dari India, Cina, Vietnam, Thailand, Jepang, Timur Tengah, hingga Eropa ditukarkan dengan rempah-rempah. Dari hasil sebaran pecahan-pecahan keramik yang ditemukan, para ahli cenderung beranggapan bahwa keramik yang paling digemari oleh Masyarakat Indonesia adalah yang berasal dari Tiongkok, yaitu yang berbahan dasar porselin.</p><p>Untuk mendapatkan glasir kaca halus nan mengkilap pada keramik porselin, dibutuhkan proses pembakaran yang rumit dengan suhu minimal 1300 derajat. Mulai dari Piring hingga sendok, Periuk sampai kendi, dan tempayan serta celengan, benda-benda ini diproduksi secara masal. Hanya saja, kini posisinya mulai tergantikan dengan adanya produk plastik – yang meskipun tahan lama dan anti pecah, tapi berdampak buruk bagi lingkungan dan penghuninya.</p>`;
+
+            const narasiCeramikEN = `<p>You are certainly no stranger to this object. Ceramics, or in Greek “keramikos” – has played a crucial role in every aspect of human life. From prehistoric times to the present day, ceramics have been widely used for various purposes, ranging from kitchen containers, living room decorations, to ceremonial accessories in religious buildings. Because this object is so valuable in daily life, the Greeks even had a patron god of potters named “Keramos”.</p><p>The existence of ceramics in the Nusantara archipelago is certainly inseparable from international trade. Ceramics from India, China, Vietnam, Thailand, Japan, the Middle East, to Europe were exchanged for spices. Based on the distribution of discovered ceramic shards, experts tend to believe that the ceramics most favored by the Indonesian people were those from China, specifically those made of porcelain.</p><p>To obtain the smooth and shiny glass glaze on porcelain ceramics, a complex firing process at a minimum temperature of 1300 degrees is required. From plates to spoons, pots to pitchers, and jars to piggy banks, these items were mass-produced. However, its position is now beginning to be replaced by plastic products – which, although durable and unbreakable, have a negative impact on the environment and its inhabitants.</p>`;
+
             // --- Scene 1 Content ---
             const katalog1 = new PANOLENS.Infospot(UNIFORM_SIZE, infoUrl);
             katalog1.position.set(5000, 126, -1676);
-            katalog1.addEventListener('click', () => openModal("Katalog 1", "Katalog 1.", "Bench B.glb"));
+            katalog1.addEventListener('click', () => openModal("Katalog Keramik", narasiCeramikID, narasiCeramikEN, "Bench B.glb", "layout-horizontal"));
 
             const katalog2 = new PANOLENS.Infospot(UNIFORM_SIZE, infoUrl);
             katalog2.position.set(5000, -79, 3296);
-            katalog2.addEventListener('click', () => openModal("Katalog 2", "Katalog 2."));
+            katalog2.addEventListener('click', () => openModal("Katalog 2", "Katalog 2.", "Catalog 2."));
 
             const area_tunggu = new PANOLENS.Infospot(UNIFORM_SIZE, infoUrl);
             area_tunggu.position.set(-2481, -632, -5000);
-            area_tunggu.addEventListener('click', () => openModal("Area tunggu", "Fasilitas ruang tunggu."));
+            area_tunggu.addEventListener('click', () => openModal("Area tunggu", "Fasilitas ruang tunggu.", "Waiting room facility."));
 
             const arrow_sudut_ruangan = new PANOLENS.Infospot(UNIFORM_SIZE, arrowLeftUrl);
             arrow_sudut_ruangan.position.set(5000, -1046, -716);
@@ -461,11 +640,11 @@
 
             const katalog3 = new PANOLENS.Infospot(UNIFORM_SIZE, infoUrl);
             katalog3.position.set(4570, 36, -5000);
-            katalog3.addEventListener('click', () => openModal("Katalog 3", "Katalog 3."));
+            katalog3.addEventListener('click', () => openModal("Katalog 3", "Katalog 3.", "Catalog 3."));
 
             const katalog4 = new PANOLENS.Infospot(UNIFORM_SIZE, infoUrl);
             katalog4.position.set(5000, 55, -2320);
-            katalog4.addEventListener('click', () => openModal("Katalog 4", "Katalog 4."));
+            katalog4.addEventListener('click', () => openModal("Katalog 4", "Katalog 4.", "Catalog 4."));
 
             const arrow_lantai_bawah = new PANOLENS.Infospot(UNIFORM_SIZE, arrowLeftUrl);
             arrow_lantai_bawah.position.set(5000, -1335, 2651);
@@ -516,10 +695,10 @@
                             viewer.setPanorama(pano);
                             document.getElementById('scene-title').innerText = title;
                             document.getElementById('scene-subtitle').innerText = subtitle;
-                            
+
                             // Safeguard: re-apply autoRotate state from the internal flag
                             viewer.getControl().autoRotate = viewer.autoRotate;
-                            
+
                             startTime = Date.now();
                             zoomOut();
                         }
@@ -590,28 +769,101 @@
             });
         }
         // --- UI CONTROLS ---
-        function openModal(title, text, modelSrc = null) {
+        let currentModalLang = 'id';
+
+        function playNarration() {
+            if (!window.responsiveVoice) return;
+
+            let htmlText = document.getElementById('tab-' + currentModalLang).innerHTML;
+            let plainText = htmlText.replace(/<[^>]*>?/gm, ''); // hapus tag HTML
+            if (!plainText.trim()) return;
+
+            let voice = currentModalLang === 'id' ? "Indonesian Female" : "UK English Female";
+
+            document.getElementById('btn-play').style.display = 'none';
+            document.getElementById('btn-stop').style.display = 'inline-block';
+
+            responsiveVoice.speak(plainText, voice, {
+                onstart: () => {
+                    document.getElementById('btn-play').style.display = 'none';
+                    document.getElementById('btn-stop').style.display = 'inline-block';
+                },
+                onend: () => {
+                    document.getElementById('btn-play').style.display = 'inline-block';
+                    document.getElementById('btn-stop').style.display = 'none';
+                }
+            });
+        }
+
+        function stopNarration() {
+            if (window.responsiveVoice) {
+                responsiveVoice.cancel();
+            }
+            const btnPlay = document.getElementById('btn-play');
+            const btnStop = document.getElementById('btn-stop');
+            if (btnPlay) btnPlay.style.display = 'inline-block';
+            if (btnStop) btnStop.style.display = 'none';
+        }
+
+        function switchTab(lang) {
+            currentModalLang = lang;
+            stopNarration();
+
+            document.getElementById('btn-tab-id').classList.remove('active');
+            document.getElementById('btn-tab-en').classList.remove('active');
+            document.getElementById('tab-id').classList.remove('active');
+            document.getElementById('tab-en').classList.remove('active');
+
+            document.getElementById('btn-tab-' + lang).classList.add('active');
+            document.getElementById('tab-' + lang).classList.add('active');
+        }
+
+        function toggleLayout() {
+            const wrapper = document.getElementById('modal-layout-wrapper');
+            if (wrapper) {
+                if (wrapper.classList.contains('layout-horizontal')) {
+                    wrapper.classList.remove('layout-horizontal');
+                    wrapper.classList.add('layout-vertical');
+                } else {
+                    wrapper.classList.remove('layout-vertical');
+                    wrapper.classList.add('layout-horizontal');
+                }
+            }
+        }
+
+        function openModal(title, textId, textEn, modelSrc = null, layoutMode = 'layout-vertical') {
             document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-text').innerText = text;
+            document.getElementById('tab-id').innerHTML = textId || '';
+            document.getElementById('tab-en').innerHTML = textEn || textId || '';
+
+            const wrapper = document.getElementById('modal-layout-wrapper');
+            if (wrapper) {
+                wrapper.className = 'modal-content-wrapper ' + layoutMode;
+            }
+
+            switchTab('id');
 
             const modelContainer = document.getElementById('model-container');
+            const modelPane = document.getElementById('modal-pane-3d');
             const modelViewer = document.getElementById('obj-viewer');
 
             // Pause background rotation (Forcefully disable both flags)
             if (viewer) {
-                viewer.autoRotate = false; 
+                viewer.autoRotate = false;
                 if (viewer.getControl()) viewer.getControl().autoRotate = false;
             }
 
             if (modelSrc) {
-                modelContainer.style.display = 'block';
+                if (modelPane) modelPane.style.display = 'block';
+                if (modelContainer) modelContainer.style.display = 'block';
                 setTimeout(() => {
-                    if (modelViewer.src !== modelSrc) {
+                    if (modelViewer && modelViewer.src !== modelSrc) {
                         modelViewer.src = modelSrc;
                     }
                 }, 50);
             } else {
-                modelContainer.style.display = 'none';
+                if (modelPane) modelPane.style.display = 'none';
+                if (modelContainer) modelContainer.style.display = 'none';
             }
 
             document.getElementById('modal').classList.add('active');
@@ -620,6 +872,8 @@
         function closeModal() {
             const modal = document.getElementById('modal');
             modal.classList.remove('active');
+
+            stopNarration();
 
             // Resume background rotation based on the state of the toggle button
             const isAutoRotateOn = document.getElementById('toggle-rotate').classList.contains('btn-active');
